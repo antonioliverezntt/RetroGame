@@ -57,6 +57,22 @@
   font-weight: 400;
 }
 
+.headerLogo {
+  max-height: 60px;
+  width: auto;
+  filter: drop-shadow(0 0 10px var(--glow-red));
+  animation: logoGlow 3s ease-in-out infinite;
+}
+
+@keyframes logoGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px var(--glow-red));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px var(--glow-red)) drop-shadow(0 0 30px rgba(255, 0, 0, 0.3));
+  }
+}
+
 /* Main Game Area with Grid Layout */
 .main {
   flex: 1;

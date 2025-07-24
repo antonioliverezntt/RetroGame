@@ -28,8 +28,11 @@ export default function Home() {
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <div>
-            <h1 className={styles.title}>PARASIGHT</h1>
-            <p className={styles.subtitle}>A bio-horror snake game where you are the cure</p>
+            <img 
+              src="/SPRITES/parasight.png" 
+              alt="PARASIGHT - A bio-horror snake game where you are the cure"
+              className={styles.headerLogo}
+            />
           </div>
         </div>
       </header>
