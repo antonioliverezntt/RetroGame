@@ -1284,12 +1284,12 @@ class SnakeScene extends Phaser.Scene {
       
       // Option background
       const optionBg = this.add.rectangle(CANVAS_WIDTH / 2, yPos, CANVAS_WIDTH - 80, 70, COLORS.MUTATION_UI, 0.3);
-      optionBg.setStrokeStyle(2, mutation.color, 0.8);
-      this.mutationSelectionUI.add(optionBg);
+      optionBg.setStrokeStyle(2, mutation.color || 0x00ff00, 0.8);
+      this.mutationSelectionUI?.add(optionBg);
       
       // Option text
       const optionText = this.add.text(CANVAS_WIDTH / 2, yPos,
-        `[${keyNum}] ${mutation.icon} ${mutation.name}\n    ${mutation.description}`, {
+        `[${keyNum}] ${mutation.icon || '🧬'} ${mutation.name || 'Unknown'}\n    ${mutation.description || 'Mysterious effect'}`, {
         fontSize: '11px',
         color: '#ffffff',
         fontFamily: 'IBM Plex Mono, monospace',
@@ -1297,11 +1297,13 @@ class SnakeScene extends Phaser.Scene {
         lineSpacing: 3,
         wordWrap: { width: CANVAS_WIDTH - 120 }
       }).setOrigin(0.5);
-      this.mutationSelectionUI.add(optionText);
+      this.mutationSelectionUI?.add(optionText);
     });
 
     // Add the entire mutation UI to the overlay layer
-    this.overlayLayer.add(this.mutationSelectionUI);
+    if (this.mutationSelectionUI && this.overlayLayer) {
+      this.overlayLayer.add(this.mutationSelectionUI);
+    }
     
     // Set up input handling for mutation selection
     this.input.keyboard?.on('keydown', this.handleMutationSelection, this);
@@ -1982,7 +1984,7 @@ class SnakeScene extends Phaser.Scene {
 
     // Clear virus graphics for restart
     this.children.list.forEach(child => {
-      if (child instanceof Phaser.GameObjects.Image || (child instanceof Phaser.GameObjects.Rectangle && !this.backgroundTiles.includes(child))) {
+      if (child instanceof Phaser.GameObjects.Image) {
         child.destroy();
       }
     });
@@ -2042,8 +2044,7 @@ class SnakeScene extends Phaser.Scene {
     // Subtle visual warning - purple flash for brain
     this.cameras.main.flash(100, 50, 50, 100, false);
     
-    // Regenerate background maze pattern with slight variations
-    this.createBrainSystemBackground();
+    // Background is now handled by sprite system
     
     // Play neuroplasticity sound
     this.audio.playNeuroplasticity();
@@ -2139,35 +2140,7 @@ class SnakeScene extends Phaser.Scene {
     }
   }
 
-  private updatePulse() {
-    // Create level-specific pulsating effects
-    const pulseIntensity = Math.sin(this.time.now * 0.003) * 0.1 + 0.1;
-    
-    this.backgroundTiles.forEach((tile, index) => {
-      let baseAlpha: number;
-      
-      switch (this.currentLevel) {
-        case 'circulatory':
-          baseAlpha = 0.3 + (index % 3) * 0.1;
-          break;
-        case 'nervous':
-          baseAlpha = 0.2 + (index % 4) * 0.1;
-          // Add twitching effect
-          if (Math.random() < 0.001) {
-            tile.setAlpha(0.8);
-            this.time.delayedCall(100, () => tile.setAlpha(baseAlpha + pulseIntensity));
-          }
-          break;
-        case 'brain':
-          baseAlpha = 0.1 + (index % 5) * 0.1;
-          break;
-        default:
-          baseAlpha = 0.3;
-      }
-      
-      tile.setAlpha(baseAlpha + pulseIntensity);
-    });
-  }
+
 
   private showRandomVirusText() {
     if (!this.gameStarted || this.gameOver || this.showingHostIntro || this.showingMutationSelection) return;
