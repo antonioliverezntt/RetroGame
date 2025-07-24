@@ -700,7 +700,8 @@ class SnakeScene extends Phaser.Scene {
       'host_portrait_Tiffany',
       'host_portrait_Rat_King',
       'target_acquired',
-      'splash_screen'
+      'splash_screen',
+      'Spark'
     ];
 
     sprites.forEach(name => {
@@ -1814,27 +1815,25 @@ class SnakeScene extends Phaser.Scene {
     this.electricalPulses.forEach(pulse => {
       if (pulse.direction === 'horizontal') {
         for (let x = 0; x < GAME_CONFIG.GRID_WIDTH; x++) {
-          const pulseSprite = this.add.rectangle(
+          const sparkSprite = this.add.image(
             x * GAME_CONFIG.GRID_SIZE + GAME_CONFIG.GRID_SIZE / 2,
             pulse.position * GAME_CONFIG.GRID_SIZE + GAME_CONFIG.GRID_SIZE / 2,
-            GAME_CONFIG.GRID_SIZE,
-            GAME_CONFIG.GRID_SIZE / 4,
-            COLORS.ELECTRICAL_PULSE
-          );
-          pulseSprite.setAlpha(0.8);
-          this.gameLayer.add(pulseSprite);
+            'Spark'
+          ).setDisplaySize(GAME_CONFIG.GRID_SIZE, GAME_CONFIG.GRID_SIZE);
+          sparkSprite.setAlpha(0.9);
+          sparkSprite.setTint(COLORS.ELECTRICAL_PULSE); // Keep the yellow electrical color
+          this.gameLayer.add(sparkSprite);
         }
       } else {
         for (let y = 0; y < GAME_CONFIG.GRID_HEIGHT; y++) {
-          const pulseSprite = this.add.rectangle(
+          const sparkSprite = this.add.image(
             pulse.position * GAME_CONFIG.GRID_SIZE + GAME_CONFIG.GRID_SIZE / 2,
             y * GAME_CONFIG.GRID_SIZE + GAME_CONFIG.GRID_SIZE / 2,
-            GAME_CONFIG.GRID_SIZE / 4,
-            GAME_CONFIG.GRID_SIZE,
-            COLORS.ELECTRICAL_PULSE
-          );
-          pulseSprite.setAlpha(0.8);
-          this.gameLayer.add(pulseSprite);
+            'Spark'
+          ).setDisplaySize(GAME_CONFIG.GRID_SIZE, GAME_CONFIG.GRID_SIZE);
+          sparkSprite.setAlpha(0.9);
+          sparkSprite.setTint(COLORS.ELECTRICAL_PULSE); // Keep the yellow electrical color
+          this.gameLayer.add(sparkSprite);
         }
       }
     });
