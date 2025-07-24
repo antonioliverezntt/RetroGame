@@ -7,43 +7,26 @@
  * - Applies font variables to the entire app
  */
 
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./styles/globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import type { Metadata } from 'next';
+import { instrumentSans } from './fonts';
+import './styles/globals.css';
 
 export const metadata: Metadata = {
-  title: "Next.js starter template",
-  description: "Blank template for a new Next.js project",
+  title: 'Parasight',
+  description: 'A bio-horror snake game where you are the cure.',
   icons: {
-    icon: [
-      {
-        url: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>",
-        type: "image/svg+xml",
-      },
-    ],
+    icon: '/favicon.ico',
   },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
-      </body>
+      <body className={instrumentSans.className}>{children}</body>
     </html>
   );
 }

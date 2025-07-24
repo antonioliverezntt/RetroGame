@@ -1,6 +1,204 @@
 ---
-description: 
+description: Game description rules & interactions
 globs: 
 alwaysApply: true
 ---
-Placeholder PRD file, that you will update with documentation on the project
+# 🧬 Viral Messiah – Product Requirements Document (PRD)
+
+> *A retro bio-horror satire where you are the cure.*
+
+---
+
+## 1. Game Summary
+
+**Viral Messiah** is a twisted reimagining of the classic *Snake* arcade formula. You play as an alien virus sent to Earth to save the planet — by eradicating humanity from the inside out. Guide your viral body through the circulatory, nervous, and cerebral systems of various despicable human hosts. Devour white blood cells, mutate grotesquely, and try not to implode before the host does.
+
+It’s fast, irreverent, and dripping in satire. Built for short runs and dark laughs.
+
+> *"They spend their lives consuming everything around them. We're just here to return the favor."*
+
+### Core Ingredients:
+- Snake mechanics with mutations
+- Satirical narrative and hosts
+- Procedurally generated body systems
+- Host thoughts, viral dialogue, ironic death screens
+- Web-based, playable on desktop and mobile
+
+---
+
+## 2. Core Gameplay Mechanics
+
+### General Loop
+| Mechanic              | Description |
+|-----------------------|-------------|
+| **Move & Eat**        | Arrow keys / swipe to control direction. Eat cells to grow. |
+| **Self-Collision**    | Death if you collide with your body. |
+| **Wall Collision**    | Death if you hit the system boundaries. |
+| **Mutations**         | Every few cells consumed, gain 1 of 3 random alien powers. |
+| **Progression**       | Levels increase in speed, complexity, and absurdity. |
+
+---
+
+### Level 1: 🩸 Circulatory System — *“Red Is the New Black”*
+- **Enemies**: White blood cells, cholesterol clumps
+- **Mechanics**: Blood flow drift, random plaque walls
+- **FX**: Plasma drip, sticky motion
+- **Mutations**:
+  - *Spine Fangs* – Attack from behind
+  - *Leech Loop* – Heal from tail collisions
+  - *Capillary Phase* – Temporary wall pass
+
+---
+
+### Level 2: ⚡ Nervous System — *“Shock Therapy, But Worse”*
+- **Enemies**: Electrical surges, antibody drones
+- **Mechanics**: Synaptic pulses, delayed input, signal confusion
+- **FX**: Flickering neurons, blue sparks
+- **Mutations**:
+  - *Synaptic Skip* – Blink ahead
+  - *Neuroleech Tendril* – Absorb stunned enemies
+  - *Caffeine Gland* – Speed boost, control loss
+
+---
+
+### Level 3: 🧠 Cerebral Cortex — *“The Final Infestation”*
+- **Enemies**: Thought-spawns, ego entity
+- **Mechanics**: Maze shift, emotional blocks, ego boss
+- **FX**: Brain fog, echo thoughts
+- **Mutations**:
+  - *Dream Parasite* – Control an enemy
+  - *Neuron Lace* – Grow in fractals
+  - *Cortex Mirage* – Clone diversion
+
+---
+
+## 3. Art & Visual Style
+
+### 🎭 Visual Tone
+- Dark, painterly pixel art with grotesque, biological textures
+- Inspired by *Children of Morta*, *Blasphemous*, *Isaac*
+- Moist, infected, glowing with toxic elegance
+
+### 🎨 Color Palette
+
+| Name                | HEX        | Use |
+|---------------------|------------|-----|
+| Infected Red        | `#9e1b32`  | Blood, background |
+| Necrotic Purple     | `#521b65`  | Shadows, UI |
+| Toxic Green         | `#6ee86e`  | Virus |
+| Host Flesh Pink     | `#c17d7d`  | Walls, flesh |
+| Sterile White       | `#ececec`  | White cells |
+| Acid Yellow         | `#f3e448`  | FX, warnings |
+| Void Black          | `#0a0a0a`  | BG fill |
+| Cyber Blue          | `#1e90ff`  | Nervous sparks |
+
+### UI
+- Glitch terminal style
+- Monospace pixel fonts
+- Yellow or green highlights on black
+
+---
+
+## 4. Tone & Humor
+
+- Sarcastic, nihilistic, bio-horror comedy
+- Inspired by *Undertale*, *Isaac*, *medical satire*
+- Virus sees itself as hero; humans are the disease
+
+### Virus Text Bubbles
+- "So many cells, so little time."
+- "Each globule brings me closer to peace."
+- "The host survives. Earth weeps."
+
+---
+
+## 5. Host Profiles
+
+### 🧔 Brayden R. – Influencer
+> Believes detox cures trauma. Owns 0 books.
+
+**Thoughts**:
+- "Do lymph nodes have carbs?"
+- "Should I monetize my sweat?"
+
+---
+
+### 👨‍💼 Greg C. – Crypto Middle Manager
+> Fired his team using emojis. Cold-brew addict.
+
+**Thoughts**:
+- "Am I the mitochondria of innovation?"
+- "Let’s disrupt the spleen!"
+
+---
+
+### 👑 Tiffany L. – Heiress
+> Bought a hospital to demolish it.
+
+**Thoughts**:
+- "Why is there no valet for this liver?"
+- "Do viruses do PR?"
+
+---
+
+
+---
+
+## 6. Technical Design
+
+| Item                 | Spec |
+|----------------------|------|
+| Platform             | Web (desktop + mobile) |
+| Framework            | Phaser.js + Canvas 2D |
+| Controls             | Keyboard (desktop), swipe (mobile) |
+| Persistence          | None |
+| Multiplayer          | No |
+| LLM usage            | CURSOR: mutation logic, narrative, art generation |
+
+---
+
+## 7. Visual Asset List
+
+### Core Virus
+- `virus_head.png`, `virus_body_segment.png`, `virus_tail.png`
+- FX: trail, glow, glitch
+
+### Environment (per system)
+- `blood_tile`, `neuron_tile`, `brain_wall`
+- `white_cell`, `antibody_drone`, `ego_entity`
+
+### UI
+- `hud_frame_top.png`, `dialog_box.png`, `thought_bubble.png`
+- `mutation_card.png`, `pause_button.png`
+
+### Host & Cutscene
+- `host_portrait_###.png` (Brayden, Greg, Tiffany, Rat King)
+- `cutscene_icon_virus.png`, `host_survives_art.png`
+
+---
+
+## 8. Roadmap
+
+**v0.1 Prototype**
+- Snake + food + collisions
+- Single environment (bloodstream)
+- Virus + basic FX
+
+**v0.2**
+- Add mutation system
+- Add intro cutscene (Brayden)
+- Thought bubble engine
+
+**v0.3**
+- 3 full levels with visuals
+- Host swapping
+- Sound FX, particle FX
+
+**v1.0**
+- Full progression: blood → brain
+- 6+ hosts
+- Mutation unlocks
+- Score sharing
+
+---
+

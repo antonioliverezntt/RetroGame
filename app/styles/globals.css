@@ -1,3 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Bio-Horror Color Palette */
+  --infection-green: #6ee86e;
+  --host-yellow: #f3e448;
+  --terminal-bg: #0a0a0a;
+  --secondary-bg: #1a1a1a;
+  --accent-red: #ff0066;
+  --text-gray: #cccccc;
+  --text-dim: #888888;
+  --glow-green: rgba(110, 232, 110, 0.4);
+  --glow-red: rgba(255, 0, 102, 0.3);
+}
+
 /* CSS Reset */
 /* 1. Use a more-intuitive box-sizing model */
 *, *::before, *::after {
