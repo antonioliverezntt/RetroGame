@@ -700,12 +700,37 @@ class SnakeScene extends Phaser.Scene {
       'host_portrait_Tiffany',
       'host_portrait_Rat_King',
       'target_acquired',
-      'splash_screen',
-      'Spark'
+      'splash_screen'
     ];
 
+    // Load base sprites
     sprites.forEach(name => {
       this.load.image(name, `/SPRITES/${name}.png`);
+    });
+
+    // Load effect sprites separately with explicit error handling
+    console.log('Loading Spark sprite...');
+    this.load.image('spark', '/SPRITES/Spark.png')
+      .on('filecomplete', () => {
+        console.log('✓ Spark sprite loaded successfully');
+      })
+      .on('loaderror', () => {
+        console.error('✗ Failed to load Spark sprite');
+      });
+
+    console.log('Loading Neuron sprite...');
+    this.load.image('neuron', '/SPRITES/Neuron.png')
+      .on('filecomplete', () => {
+        console.log('✓ Neuron sprite loaded successfully');
+      })
+      .on('loaderror', () => {
+        console.error('✗ Failed to load Neuron sprite');
+      });
+
+    // Add load complete handler
+    this.load.on('complete', () => {
+      console.log('=== All sprites loaded ===');
+      console.log('Available textures:', Object.keys(this.textures.list));
     });
   }
 
@@ -718,6 +743,42 @@ class SnakeScene extends Phaser.Scene {
     
     // Select random host for this session
     this.currentHost = this.selectRandomHost();
+    
+    // DEBUG: Test if sprites are loading correctly
+    this.load.once('complete', () => {
+      console.log('=== SPRITE LOADING DEBUG ===');
+      console.log('All sprites loaded. Testing availability...');
+      
+      // List all loaded textures
+      console.log('Available textures:', Object.keys(this.textures.list));
+      
+      // Test Spark sprite
+      const sparkExists = this.textures.exists('Spark');
+      console.log('Spark texture exists:', sparkExists);
+      if (sparkExists) {
+        console.log('✓ Spark texture found');
+      } else {
+        console.log('✗ Spark texture NOT found');
+        // Check for case variations
+        console.log('Checking case variations...');
+        console.log('spark exists:', this.textures.exists('spark'));
+        console.log('SPARK exists:', this.textures.exists('SPARK'));
+      }
+      
+      // Test Neuron sprite
+      const neuronExists = this.textures.exists('Neuron');
+      console.log('Neuron texture exists:', neuronExists);
+      if (neuronExists) {
+        console.log('✓ Neuron texture found');
+      } else {
+        console.log('✗ Neuron texture NOT found');
+        // Check for case variations
+        console.log('neuron exists:', this.textures.exists('neuron'));
+        console.log('NEURON exists:', this.textures.exists('NEURON'));
+      }
+      
+      console.log('=== END SPRITE DEBUG ===');
+    });
     
     // Show splash screen first
     this.showSplashScreen();
@@ -1209,9 +1270,12 @@ class SnakeScene extends Phaser.Scene {
   private setupLevelSpecificTimers() {
     switch (this.currentLevel) {
       case 'nervous':
-        // Impulse pulse timer (every 10 seconds)
+        // Trigger immediate electrical pulse to test Spark sprites
+        this.triggerImpulsePulse();
+        
+        // Impulse pulse timer (every 8 seconds for more frequent testing)
         this.time.addEvent({
-          delay: 10000,
+          delay: 8000,
           callback: this.triggerImpulsePulse,
           callbackScope: this,
           loop: true
@@ -1286,7 +1350,9 @@ class SnakeScene extends Phaser.Scene {
       // Option background
       const optionBg = this.add.rectangle(CANVAS_WIDTH / 2, yPos, CANVAS_WIDTH - 80, 70, COLORS.MUTATION_UI, 0.3);
       optionBg.setStrokeStyle(2, mutation.color || 0x00ff00, 0.8);
-      this.mutationSelectionUI?.add(optionBg);
+      if (this.mutationSelectionUI) {
+        this.mutationSelectionUI.add(optionBg);
+      }
       
       // Option text
       const optionText = this.add.text(CANVAS_WIDTH / 2, yPos,
@@ -1298,7 +1364,9 @@ class SnakeScene extends Phaser.Scene {
         lineSpacing: 3,
         wordWrap: { width: CANVAS_WIDTH - 120 }
       }).setOrigin(0.5);
-      this.mutationSelectionUI?.add(optionText);
+      if (this.mutationSelectionUI) {
+        this.mutationSelectionUI.add(optionText);
+      }
     });
 
     // Add the entire mutation UI to the overlay layer
@@ -1786,29 +1854,42 @@ class SnakeScene extends Phaser.Scene {
 
     // Draw enemies - ADD TO GAME LAYER
     this.enemies.forEach(enemy => {
-      let color: number;
-      let size = GAME_CONFIG.GRID_SIZE - 4;
-      
       switch (enemy.type) {
         case 'antibody_drone':
-          color = enemy.stunned ? 0x888888 : COLORS.ANTIBODY_DRONE;
+          // Keep antibody drones as rectangles (level 2)
+          const color = enemy.stunned ? 0x888888 : COLORS.ANTIBODY_DRONE;
+          const size = GAME_CONFIG.GRID_SIZE - 4;
+          
+          const droneSprite = this.add.rectangle(
+            enemy.x * GAME_CONFIG.GRID_SIZE + GAME_CONFIG.GRID_SIZE / 2,
+            enemy.y * GAME_CONFIG.GRID_SIZE + GAME_CONFIG.GRID_SIZE / 2,
+            size,
+            size,
+            color
+          );
+          droneSprite.setStrokeStyle(2, 0xffffff, enemy.stunned ? 0.3 : 0.8);
+          this.gameLayer.add(droneSprite);
           break;
+          
         case 'microdrone':
-          color = enemy.stunned ? 0x888888 : COLORS.MICRODRONE;
-          size = GAME_CONFIG.GRID_SIZE - 6;
+          // Use Neuron sprite for microdrones (level 3)
+          const neuronSprite = this.add.image(
+            enemy.x * GAME_CONFIG.GRID_SIZE + GAME_CONFIG.GRID_SIZE / 2,
+            enemy.y * GAME_CONFIG.GRID_SIZE + GAME_CONFIG.GRID_SIZE / 2,
+            'neuron'
+          );
+          neuronSprite.setDisplaySize(GAME_CONFIG.GRID_SIZE - 2, GAME_CONFIG.GRID_SIZE - 2);
+          
+          if (enemy.stunned) {
+            neuronSprite.setTint(0x888888);
+            neuronSprite.setAlpha(0.6);
+          } else {
+            neuronSprite.setTint(COLORS.MICRODRONE);
+            neuronSprite.setAlpha(1.0);
+          }
+          this.gameLayer.add(neuronSprite);
           break;
       }
-      
-      const enemySprite = this.add.rectangle(
-        enemy.x * GAME_CONFIG.GRID_SIZE + GAME_CONFIG.GRID_SIZE / 2,
-        enemy.y * GAME_CONFIG.GRID_SIZE + GAME_CONFIG.GRID_SIZE / 2,
-        size,
-        size,
-        color
-      );
-      
-      enemySprite.setStrokeStyle(2, 0xffffff, enemy.stunned ? 0.3 : 0.8);
-      this.gameLayer.add(enemySprite);
     });
 
     // Draw electrical pulses (Nervous System) - ADD TO GAME LAYER
@@ -1818,10 +1899,11 @@ class SnakeScene extends Phaser.Scene {
           const sparkSprite = this.add.image(
             x * GAME_CONFIG.GRID_SIZE + GAME_CONFIG.GRID_SIZE / 2,
             pulse.position * GAME_CONFIG.GRID_SIZE + GAME_CONFIG.GRID_SIZE / 2,
-            'Spark'
-          ).setDisplaySize(GAME_CONFIG.GRID_SIZE, GAME_CONFIG.GRID_SIZE);
+            'spark'
+          );
+          sparkSprite.setDisplaySize(GAME_CONFIG.GRID_SIZE, GAME_CONFIG.GRID_SIZE);
           sparkSprite.setAlpha(0.9);
-          sparkSprite.setTint(COLORS.ELECTRICAL_PULSE); // Keep the yellow electrical color
+          sparkSprite.setTint(COLORS.ELECTRICAL_PULSE);
           this.gameLayer.add(sparkSprite);
         }
       } else {
@@ -1829,10 +1911,11 @@ class SnakeScene extends Phaser.Scene {
           const sparkSprite = this.add.image(
             pulse.position * GAME_CONFIG.GRID_SIZE + GAME_CONFIG.GRID_SIZE / 2,
             y * GAME_CONFIG.GRID_SIZE + GAME_CONFIG.GRID_SIZE / 2,
-            'Spark'
-          ).setDisplaySize(GAME_CONFIG.GRID_SIZE, GAME_CONFIG.GRID_SIZE);
+            'spark'
+          );
+          sparkSprite.setDisplaySize(GAME_CONFIG.GRID_SIZE, GAME_CONFIG.GRID_SIZE);
           sparkSprite.setAlpha(0.9);
-          sparkSprite.setTint(COLORS.ELECTRICAL_PULSE); // Keep the yellow electrical color
+          sparkSprite.setTint(COLORS.ELECTRICAL_PULSE);
           this.gameLayer.add(sparkSprite);
         }
       }
@@ -2000,7 +2083,17 @@ class SnakeScene extends Phaser.Scene {
   }
 
   private triggerImpulsePulse() {
-    if (!this.gameStarted || this.gameOver || this.currentLevel !== 'nervous') return;
+    console.log('triggerImpulsePulse called', {
+      gameStarted: this.gameStarted,
+      gameOver: this.gameOver,
+      currentLevel: this.currentLevel,
+      currentPulses: this.electricalPulses.length
+    });
+    
+    if (!this.gameStarted || this.gameOver || this.currentLevel !== 'nervous') {
+      console.log('Pulse trigger conditions not met');
+      return;
+    }
     
     // Create electrical pulse across row or column
     const isHorizontal = Math.random() > 0.5;
@@ -2014,6 +2107,7 @@ class SnakeScene extends Phaser.Scene {
     };
     
     this.electricalPulses.push(pulse);
+    console.log('✓ Electrical pulse created:', pulse);
     
     // Play electrical pulse sound
     this.audio.playElectricalPulse();
