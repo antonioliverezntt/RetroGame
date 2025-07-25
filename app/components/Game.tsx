@@ -630,6 +630,7 @@ class SnakeScene extends Phaser.Scene {
   private showingHostIntro: boolean = true;
   private showingMutationSelection: boolean = false;
   private showingLevelTransition: boolean = false;
+  private showingWinner: boolean = false;
   private currentHost: typeof HOSTS[keyof typeof HOSTS] = HOSTS.brayden; // Will be set in create()
   private activeMutations: ActiveMutation[] = [];
   private mutationOptions: (typeof MUTATIONS[keyof typeof MUTATIONS])[] = [];
@@ -649,6 +650,8 @@ class SnakeScene extends Phaser.Scene {
   private hostThoughtText?: Phaser.GameObjects.Text;
   private mutationStatusText?: Phaser.GameObjects.Text;
   private levelInfoText?: Phaser.GameObjects.Text;
+  private titleText?: Phaser.GameObjects.Text;
+  private winnerText?: Phaser.GameObjects.Text;
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasdKeys?: { [key: string]: Phaser.Input.Keyboard.Key };
   private numberKeys?: { [key: string]: Phaser.Input.Keyboard.Key };
@@ -702,7 +705,9 @@ class SnakeScene extends Phaser.Scene {
       'host_portrait_Tiffany',
       'host_portrait_Rat_King',
       'target_acquired',
-      'splash_screen'
+      'splash_screen',
+      'parasight',
+      'winner'
     ];
 
     // Load base sprites
@@ -1461,7 +1466,7 @@ class SnakeScene extends Phaser.Scene {
 
   update() {
     // Handle input (only if game is initialized)
-    if (!this.showingHostIntro && !this.showingMutationSelection && !this.showingLevelTransition) {
+    if (!this.showingHostIntro && !this.showingMutationSelection && !this.showingLevelTransition && !this.showingWinner) {
       this.handleInput();
       
       // Update mutation timers
@@ -1564,6 +1569,7 @@ class SnakeScene extends Phaser.Scene {
 
   private handleInput() {
     if (!this.cursors || !this.wasdKeys) return;
+    if (!this.gameStarted || this.gameOver || this.showingHostIntro || this.showingMutationSelection || this.showingWinner) return;
 
     // Start game on first input
     if (!this.gameStarted && !this.gameOver) {
@@ -1654,7 +1660,7 @@ class SnakeScene extends Phaser.Scene {
   }
 
   private moveSnake() {
-    if (!this.gameStarted || this.gameOver || this.showingMutationSelection || this.showingLevelTransition) return;
+    if (!this.gameStarted || this.gameOver || this.showingMutationSelection || this.showingLevelTransition || this.showingWinner) return;
 
     // Apply neural interference delay if active
     if (this.movementDelay > 0) {
@@ -2259,7 +2265,7 @@ class SnakeScene extends Phaser.Scene {
 
 
   private showRandomVirusText() {
-    if (!this.gameStarted || this.gameOver || this.showingHostIntro || this.showingMutationSelection) return;
+    if (!this.gameStarted || this.gameOver || this.showingHostIntro || this.showingMutationSelection || this.showingWinner) return;
     
     const texts = VIRUS_TEXTS.idle;
     const randomText = texts[Math.floor(Math.random() * texts.length)];
@@ -2276,7 +2282,7 @@ class SnakeScene extends Phaser.Scene {
   }
 
   private showRandomHostThought() {
-    if (!this.gameStarted || this.gameOver || this.showingHostIntro || this.showingMutationSelection) return;
+    if (!this.gameStarted || this.gameOver || this.showingHostIntro || this.showingMutationSelection || this.showingWinner) return;
     
     const thoughts = this.currentHost.thoughts;
     const randomThought = thoughts[Math.floor(Math.random() * thoughts.length)];
@@ -2357,6 +2363,9 @@ class SnakeScene extends Phaser.Scene {
         }
         this.showingLevelTransition = false;
       });
+    } else {
+      // No next level - player has won the game!
+      this.showWinnerScreen();
     }
   }
 
@@ -2605,6 +2614,92 @@ class SnakeScene extends Phaser.Scene {
         `LEVEL: ${this.getNextLevelScore() || 'MAX'}`
       );
     }
+  }
+
+  private showWinnerScreen() {
+    this.showingWinner = true;
+    this.showingLevelTransition = false;
+    
+    // Stop all audio and play victory sound
+    this.audio.stopAmbient();
+    
+    // Create winner screen background
+    const winnerBg = this.add.rectangle(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, CANVAS_WIDTH, CANVAS_HEIGHT, 0x000000, 0.95);
+    this.overlayLayer.add(winnerBg);
+    
+    // Add winner image
+    const winnerImage = this.add.image(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 60, 'winner');
+    winnerImage.setDisplaySize(400, 300); // Adjust size as needed
+    this.overlayLayer.add(winnerImage);
+    
+    // Add winner text
+    this.winnerText = this.add.text(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 160,
+      `>>> TOTAL VIRAL DOMINATION ACHIEVED <<<\n\n` +
+      `🧬 CONGRATULATIONS, PARASIGHT!\n\n` +
+      `📊 Final Infection Level: ${this.score}\n` +
+      `⚙️  Total Mutations Acquired: ${this.activeMutations.length}\n` +
+      `🎯 Systems Conquered: ${LEVELS[this.currentLevel].name}\n\n` +
+      `🔄 Press ANY KEY to Return to Base`, {
+      fontSize: '12px',
+      color: '#6ee86e',
+      align: 'center',
+      fontFamily: 'IBM Plex Mono, monospace',
+      lineSpacing: 4,
+      backgroundColor: 'rgba(10, 10, 10, 0.8)',
+      padding: { x: 20, y: 16 },
+      wordWrap: { width: CANVAS_WIDTH - 80 }
+    }).setOrigin(0.5);
+    this.overlayLayer.add(this.winnerText);
+    
+    // Set up input to return to splash screen
+    this.input.keyboard?.once('keydown', () => {
+      this.returnToSplashScreen();
+    });
+  }
+  
+  private returnToSplashScreen() {
+    // Clear winner screen
+    if (this.winnerText) {
+      this.winnerText.destroy();
+      this.winnerText = undefined;
+    }
+    
+    // Reset all game state
+    this.resetGameState();
+    
+    // Show splash screen
+    this.showSplashScreen();
+  }
+  
+  private resetGameState() {
+    // Reset all game variables to initial state
+    this.gameStarted = false;
+    this.gameOver = false;
+    this.showingWinner = false;
+    this.showingHostIntro = true;
+    this.showingMutationSelection = false;
+    this.showingLevelTransition = false;
+    
+    // Reset game data
+    this.score = 0;
+    this.snake = [{ x: 12, y: 10 }];
+    this.direction = { x: 1, y: 0 };
+    this.nextDirection = { x: 1, y: 0 };
+    this.currentLevel = 'circulatory';
+    this.currentHost = HOSTS.brayden;
+    this.activeMutations = [];
+    this.enemies = [];
+    this.electricalPulses = [];
+    this.cholesterolObstacles = [];
+    this.nextMutationScore = GAME_CONFIG.MUTATION_THRESHOLD;
+    
+    // Reset mutation flags
+    this.canPhaseWalls = false;
+    this.hasSpeedBoost = false;
+    this.movementDelay = 0;
+    
+    // Clear overlay layer
+    this.overlayLayer.removeAll(true);
   }
 }
 
