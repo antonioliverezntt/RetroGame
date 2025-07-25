@@ -5,7 +5,7 @@ import { instrumentSans } from './fonts';
 import dynamic from 'next/dynamic';
 
 // Dynamic import to avoid SSR issues with Phaser
-const Game = dynamic(() => import('./components/Game'), {
+const Game = dynamic(() => import('./components/Game').then(mod => ({ default: mod.default })), {
   ssr: false,
   loading: () => (
     <div className={styles.loadingContainer} style={{ 

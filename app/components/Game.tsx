@@ -292,6 +292,8 @@ interface ElectricalPulse {
   position: number; // row or column
   activatedAt: number;
   duration: number;
+  warningPhase: number; // Warning phase duration (1 second)
+  isDeadly: boolean; // Whether the pulse is currently deadly
 }
 
 // Enhanced audio effect generator with ambient sounds
@@ -1538,10 +1540,18 @@ class SnakeScene extends Phaser.Scene {
   }
 
   private updateElectricalPulses() {
-    // Remove expired pulses
-    this.electricalPulses = this.electricalPulses.filter(pulse => 
-      this.time.now - pulse.activatedAt < pulse.duration
-    );
+    // Update pulse states and remove expired pulses
+    this.electricalPulses = this.electricalPulses.filter(pulse => {
+      const elapsed = this.time.now - pulse.activatedAt;
+      
+      // Check if pulse should become deadly (after warning phase)
+      if (!pulse.isDeadly && elapsed >= pulse.warningPhase) {
+        pulse.isDeadly = true;
+      }
+      
+      // Remove pulse if duration exceeded
+      return elapsed < pulse.duration;
+    });
   }
 
   private updateMutationTimers() {
@@ -1678,9 +1688,12 @@ class SnakeScene extends Phaser.Scene {
       if (newHead.y >= GAME_CONFIG.GRID_HEIGHT) newHead.y = 0;
     }
 
-    // Check electrical pulse collision (Nervous System)
+    // Check electrical pulse collision (Nervous System) - only deadly pulses
     if (this.currentLevel === 'nervous' && !this.canPhaseWalls) {
       const hitByPulse = this.electricalPulses.some(pulse => {
+        // Only check collision with deadly pulses
+        if (!pulse.isDeadly) return false;
+        
         if (pulse.direction === 'horizontal' && newHead.y === pulse.position) return true;
         if (pulse.direction === 'vertical' && newHead.x === pulse.position) return true;
         return false;
@@ -1899,6 +1912,9 @@ class SnakeScene extends Phaser.Scene {
 
     // Draw electrical pulses (Nervous System) - ADD TO GAME LAYER
     this.electricalPulses.forEach(pulse => {
+      const pulseColor = pulse.isDeadly ? COLORS.ELECTRICAL_PULSE : 0xffaa00; // Orange for warning, yellow for deadly
+      const pulseAlpha = pulse.isDeadly ? 0.9 : 0.6; // More transparent during warning phase
+      
       if (pulse.direction === 'horizontal') {
         for (let x = 0; x < GAME_CONFIG.GRID_WIDTH; x++) {
           const sparkSprite = this.add.image(
@@ -1907,8 +1923,8 @@ class SnakeScene extends Phaser.Scene {
             'spark'
           );
           sparkSprite.setDisplaySize(GAME_CONFIG.GRID_SIZE, GAME_CONFIG.GRID_SIZE);
-          sparkSprite.setAlpha(0.9);
-          sparkSprite.setTint(COLORS.ELECTRICAL_PULSE);
+          sparkSprite.setAlpha(pulseAlpha);
+          sparkSprite.setTint(pulseColor);
           this.gameLayer.add(sparkSprite);
         }
       } else {
@@ -1919,8 +1935,8 @@ class SnakeScene extends Phaser.Scene {
             'spark'
           );
           sparkSprite.setDisplaySize(GAME_CONFIG.GRID_SIZE, GAME_CONFIG.GRID_SIZE);
-          sparkSprite.setAlpha(0.9);
-          sparkSprite.setTint(COLORS.ELECTRICAL_PULSE);
+          sparkSprite.setAlpha(pulseAlpha);
+          sparkSprite.setTint(pulseColor);
           this.gameLayer.add(sparkSprite);
         }
       }
@@ -2108,7 +2124,9 @@ class SnakeScene extends Phaser.Scene {
       direction: isHorizontal ? 'horizontal' : 'vertical',
       position: position,
       activatedAt: this.time.now,
-      duration: 2000 // 2 seconds
+      duration: 2000, // 2 seconds total
+      warningPhase: 1000, // 1 second warning phase
+      isDeadly: false // Starts as warning, becomes deadly after 1 second
     };
     
     this.electricalPulses.push(pulse);
@@ -2118,7 +2136,7 @@ class SnakeScene extends Phaser.Scene {
     this.audio.playElectricalPulse();
     
     if (this.virusText) {
-      this.virusText.setText('Virus: "Electrical surge detected. Brace for synaptic chaos."');
+      this.virusText.setText('Virus: "Electrical surge incoming. Orange warning, yellow death."');
     }
     
     this.time.delayedCall(5000, () => {
