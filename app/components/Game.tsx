@@ -1315,12 +1315,20 @@ class SnakeScene extends Phaser.Scene {
   }
 
   private showMutationSelectionUI() {
+    // Cleanup any existing UI first
+    if (this.mutationSelectionUI) {
+      this.mutationSelectionUI.destroy();
+      this.mutationSelectionUI = undefined;
+    }
+    
     // Create dark overlay
     const overlay = this.add.rectangle(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, CANVAS_WIDTH, CANVAS_HEIGHT, 0x000000, 0.8);
     
     // Create container for mutation UI
-    this.mutationSelectionUI = this.add.container(0, 0);
-    this.mutationSelectionUI.add(overlay);
+    const container = this.add.container(0, 0);
+    
+    // Add overlay to container
+    container.add(overlay);
     
     // Title
     const title = this.add.text(CANVAS_WIDTH / 2, 80, 
@@ -1331,7 +1339,7 @@ class SnakeScene extends Phaser.Scene {
       stroke: '#000000',
       strokeThickness: 1
     }).setOrigin(0.5);
-    this.mutationSelectionUI.add(title);
+    container.add(title);
     
     const subtitle = this.add.text(CANVAS_WIDTH / 2, 110,
       '🔬 Select adaptive mutation [ 1 / 2 / 3 ]:', {
@@ -1340,7 +1348,7 @@ class SnakeScene extends Phaser.Scene {
       fontFamily: 'IBM Plex Mono, monospace',
       align: 'center'
     }).setOrigin(0.5);
-    this.mutationSelectionUI.add(subtitle);
+    container.add(subtitle);
     
     // Display mutation options
     this.mutationOptions.forEach((mutation, index) => {
@@ -1350,9 +1358,7 @@ class SnakeScene extends Phaser.Scene {
       // Option background
       const optionBg = this.add.rectangle(CANVAS_WIDTH / 2, yPos, CANVAS_WIDTH - 80, 70, COLORS.MUTATION_UI, 0.3);
       optionBg.setStrokeStyle(2, mutation.color || 0x00ff00, 0.8);
-      if (this.mutationSelectionUI) {
-        this.mutationSelectionUI.add(optionBg);
-      }
+      container.add(optionBg);
       
       // Option text
       const optionText = this.add.text(CANVAS_WIDTH / 2, yPos,
@@ -1364,14 +1370,13 @@ class SnakeScene extends Phaser.Scene {
         lineSpacing: 3,
         wordWrap: { width: CANVAS_WIDTH - 120 }
       }).setOrigin(0.5);
-      if (this.mutationSelectionUI) {
-        this.mutationSelectionUI.add(optionText);
-      }
+      container.add(optionText);
     });
 
-    // Add the entire mutation UI to the overlay layer
-    if (this.mutationSelectionUI && this.overlayLayer) {
-      this.overlayLayer.add(this.mutationSelectionUI);
+    // Add the container to the overlay layer and store reference
+    if (this.overlayLayer) {
+      this.overlayLayer.add(container);
+      this.mutationSelectionUI = container;
     }
     
     // Set up input handling for mutation selection
