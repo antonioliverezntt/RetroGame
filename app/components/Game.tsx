@@ -1569,28 +1569,21 @@ class SnakeScene extends Phaser.Scene {
 
   private handleInput() {
     if (!this.cursors || !this.wasdKeys) return;
-    if (!this.gameStarted || this.gameOver || this.showingHostIntro || this.showingMutationSelection || this.showingWinner) return;
-
-    // Start game on first input
-    if (!this.gameStarted && !this.gameOver) {
-      if (this.cursors.up.isDown || this.wasdKeys['W'].isDown) {
+    
+    // Start game on first input if not started
+    if (!this.gameStarted && !this.gameOver && !this.showingHostIntro && !this.showingMutationSelection && !this.showingWinner) {
+      if (this.cursors.up.isDown || this.wasdKeys['W'].isDown ||
+          this.cursors.down.isDown || this.wasdKeys['S'].isDown ||
+          this.cursors.left.isDown || this.wasdKeys['A'].isDown ||
+          this.cursors.right.isDown || this.wasdKeys['D'].isDown) {
         this.startGame();
-        this.nextDirection = { x: 0, y: -1 };
-      } else if (this.cursors.down.isDown || this.wasdKeys['S'].isDown) {
-        this.startGame();
-        this.nextDirection = { x: 0, y: 1 };
-      } else if (this.cursors.left.isDown || this.wasdKeys['A'].isDown) {
-        this.startGame();
-        this.nextDirection = { x: -1, y: 0 };
-      } else if (this.cursors.right.isDown || this.wasdKeys['D'].isDown) {
-        this.startGame();
-        this.nextDirection = { x: 1, y: 0 };
       }
       return;
     }
 
     // Game controls during play
-    if (this.gameStarted && !this.gameOver) {
+    if (this.gameStarted && !this.gameOver && !this.showingMutationSelection && !this.showingLevelTransition && !this.showingWinner) {
+      // Handle movement
       if ((this.cursors.up.isDown || this.wasdKeys['W'].isDown) && this.direction.y === 0) {
         this.nextDirection = { x: 0, y: -1 };
       } else if ((this.cursors.down.isDown || this.wasdKeys['S'].isDown) && this.direction.y === 0) {
@@ -1602,13 +1595,13 @@ class SnakeScene extends Phaser.Scene {
       }
       
       // Special mutation activation (Capillary Phase with Space)
-      if (this.cursors.space.isDown) {
+      if (this.cursors.space?.isDown) {
         this.activateCapillaryPhase();
       }
     }
 
-    // Restart game
-    if (this.gameOver && (this.cursors.space.isDown || this.wasdKeys['W'].isDown)) {
+    // Restart game on game over
+    if (this.gameOver && (this.cursors.space?.isDown || this.wasdKeys['W'].isDown)) {
       this.restartGame();
     }
   }
@@ -1641,7 +1634,7 @@ class SnakeScene extends Phaser.Scene {
       this.instructionText.setVisible(false);
     }
     
-    // Also hide the instruction border (this was the green rectangle!)
+    // Also hide the instruction border
     this.overlayLayer.list.forEach((child: any) => {
       if (child instanceof Phaser.GameObjects.Rectangle && 
           child.strokeColor === 0x6ee86e) {
@@ -1657,6 +1650,24 @@ class SnakeScene extends Phaser.Scene {
     this.time.delayedCall(2000, () => {
       this.showRandomHostThought();
     });
+
+    // Initialize keyboard controls
+    if (!this.cursors || !this.wasdKeys) {
+      this.cursors = this.input.keyboard?.createCursorKeys();
+      this.wasdKeys = this.input.keyboard?.addKeys('W,S,A,D') as { [key: string]: Phaser.Input.Keyboard.Key };
+    }
+
+    // Set initial direction based on currently pressed keys
+    if (this.cursors?.up.isDown || this.wasdKeys?.['W'].isDown) {
+      this.direction = { x: 0, y: -1 };
+    } else if (this.cursors?.down.isDown || this.wasdKeys?.['S'].isDown) {
+      this.direction = { x: 0, y: 1 };
+    } else if (this.cursors?.left.isDown || this.wasdKeys?.['A'].isDown) {
+      this.direction = { x: -1, y: 0 };
+    } else if (this.cursors?.right.isDown || this.wasdKeys?.['D'].isDown) {
+      this.direction = { x: 1, y: 0 };
+    }
+    this.nextDirection = { ...this.direction };
   }
 
   private moveSnake() {
